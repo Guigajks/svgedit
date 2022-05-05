@@ -580,10 +580,15 @@ const mouseUpEvent = (evt) => {
   const useUnit = false // (svgCanvas.getCurConfig().baseUnit !== 'px');
   svgCanvas.setStarted(false)
   let t
+  let textResized = false
   switch (svgCanvas.getCurrentMode()) {
     // intentionally fall-through to select here
     case 'resize':
     case 'multiselect':
+      if (svgCanvas.getCurrentMode() === 'resize') {
+        textResized = true
+      }
+
       if (svgCanvas.getRubberBox()) {
         svgCanvas.getRubberBox().setAttribute('display', 'none')
         svgCanvas.setCurBBoxes([])
@@ -605,6 +610,11 @@ const mouseUpEvent = (evt) => {
             case 'text':
               svgCanvas.setCurText('font_size', selected.getAttribute('font-size'))
               svgCanvas.setCurText('font_family', selected.getAttribute('font-family'))
+
+              if (textResized) {
+                svgCanvas.textActions.start(selectedElements[0])
+                textResized = false
+              }
             // fallthrough
             default:
               svgCanvas.setCurProperties('fill', selected.getAttribute('fill'))
@@ -992,6 +1002,8 @@ const mouseDownEvent = (evt) => {
   // set the mouseTarget to that and update the mode to rotate/resize
 
   if (mouseTarget === svgCanvas.selectorManager.selectorParentGroup && selectedElements[0]) {
+    svgCanvas.textActions.clear()
+
     const grip = evt.target
     const griptype = dataStorage.get(grip, 'type')
     // rotating
